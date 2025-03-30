@@ -6,6 +6,7 @@ use Google\Client;
 use App\Models\Holding;
 use Google\Service\Drive;
 use Google\Service\Sheets;
+use Illuminate\Support\Collection;
 use Google\Service\Sheets\ValueRange;
 
 class PorfolioManager
@@ -37,12 +38,18 @@ class PorfolioManager
         );
     }
 
-    public static function all(): array
+    public static function all(): Collection
     {
-        return cache()->remember('portfolio', 120, fn () => static::getService()
+        return cache()->remember('portfolio', 120, fn () => collect(static::getService()
             ->spreadsheets_values
             ->get(static::spreadsheetId(), static::range())
-            ->getValues());
+            ->getValues()
+        )->mapWithKeys(fn (array $row) => [$row[0] => $row[1]]));
+    }
+
+    public static function find(string $ticker): array
+    {
+        return static::all()[$ticker] ?? [];
     }
 
     protected static function getService(): Sheets
