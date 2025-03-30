@@ -15,7 +15,7 @@ class Holding extends Model
     {
         return Attribute::make(
             get: function () {
-                PorfolioManager::all()[$this->ticker];
+                return PorfolioManager::all()[$this->ticker];
             },
         );
     }
