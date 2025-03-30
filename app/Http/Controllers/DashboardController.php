@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Google\Client;
 use Google\Service\Drive;
 use Google\Service\Sheets;
-use Illuminate\Http\Request;
 use Google\Service\Sheets\ValueRange;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -14,14 +14,14 @@ class DashboardController extends Controller
     {
         $spreadsheetId = config('investaroo.sheet_id');
 
-        $client = new Client();
+        $client = new Client;
         $client->useApplicationDefaultCredentials();
         $client->addScope(Drive::DRIVE);
         $service = new Sheets($client);
 
         // put the data
         $range = 'Sheet1!A1:B3';
-        $valueRange = new ValueRange();
+        $valueRange = new ValueRange;
         $valueRange->setRange($range);
         $valueRange->setValues([
             ['Ticker', 'Last price'],
