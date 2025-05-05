@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Holding;
-use App\PorfolioManager;
 use Illuminate\Http\Request;
+use App\Services\PorfolioManager;
 
 class DashboardController extends Controller
 {

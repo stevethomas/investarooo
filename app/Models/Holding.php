@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\PorfolioManager;
+use App\Services\PorfolioManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 

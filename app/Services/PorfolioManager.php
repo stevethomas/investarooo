@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Services;
 
 use Google\Client;
 use App\Models\Holding;
@@ -16,6 +16,7 @@ class PorfolioManager
     public static function refresh(): void
     {
         $i = 1;
+
         $holdings = Holding::query()
             ->get();
 
