@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('ticker');
             $table->unsignedInteger('units');
-            $table->decimal('price', places: 3);
+            $table->decimal('purchase', places: 3);
             $table->decimal('yield', places: 3)->nullable();
             $table->string('dividend_frequency')->nullable();
             $table->decimal('drp_weight', places: 3)->nullable();

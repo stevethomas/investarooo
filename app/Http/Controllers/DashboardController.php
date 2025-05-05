@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\Holding;
 use Illuminate\Http\Request;
 use App\Services\PorfolioManager;
@@ -10,10 +11,15 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request)
     {
-        PorfolioManager::refresh();
 
         return inertia('Dashboard', [
-            'holdings' => Holding::all(),
+            'holdings' => Inertia::defer(function () {
+                PorfolioManager::refresh();
+
+                return Holding::query()
+                    ->orderBy('ticker')
+                    ->get();
+            }),
         ]);
     }
 }

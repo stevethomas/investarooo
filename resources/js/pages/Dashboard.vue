@@ -1,21 +1,15 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
+import { Deferred, Head } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import PlaceholderPattern from '../components/PlaceholderPattern.vue';
-import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table'
+import Skeleton from '../components/Skeleton.vue';
 
-defineProps({
+const props = defineProps({
     holdings: Array,
-})
+});
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -24,8 +18,35 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const cost = (holding) => Number(holding.units) * Number(holding.price);
+const number = (amount: number, style: string = 'decimal', places: number = 0) =>
+    new Intl.NumberFormat('en-AU', {
+        style: style,
+        currency: 'AUD',
+        minimumFractionDigits: places,
+        maximumFractionDigits: places,
+    }).format(amount);
+
+const price = (amount: number, places: number = 0) => number(amount, 'currency', places);
+
+const cost = (holding) => Number(holding.units) * Number(holding.purchase);
 const marketValue = (holding) => Number(holding.units) * Number(holding.last_price);
+const profitLossAmount = (holding) => marketValue(holding) - cost(holding);
+const profitLoss = (holding) => profitLossAmount(holding) / marketValue(holding);
+const weight = (holding) => marketValue(holding) / aggregates.value.marketValue;
+const yieldAmount = (holding) => marketValue(holding) * (holding.yield / 100);
+
+const aggregates = computed(() => {
+    return {
+        units: props.holdings.reduce((acc, holding) => acc + holding.units, 0),
+        cost: props.holdings.reduce((acc, holding) => acc + cost(holding), 0),
+        marketValue: props.holdings.reduce((acc, holding) => acc + marketValue(holding), 0),
+        profitLossAmount: props.holdings.reduce((acc, holding) => acc + profitLossAmount(holding), 0),
+        profitLoss: props.holdings.reduce((acc, holding) => acc + profitLossAmount(holding), 0) / props.holdings.reduce((acc, holding) => acc + marketValue(holding), 0),
+        yieldAmount: props.holdings.reduce((acc, holding) => acc + yieldAmount(holding), 0),
+        yieldPercentage: props.holdings.reduce((acc, holding) => acc + yieldAmount(holding), 0) / props.holdings.reduce((acc, holding) => acc + marketValue(holding), 0),
+        drpWeight: props.holdings.reduce((acc, holding) => acc + holding.drp_weight, 0) / props.holdings.length,
+    };
+});
 </script>
 
 <template>
@@ -47,40 +68,78 @@ const marketValue = (holding) => Number(holding.units) * Number(holding.last_pri
 
             <div class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border md:min-h-min">
                 <Table>
-                    <TableCaption>Current holdings</TableCaption>
                     <TableHeader>
                         <TableRow>
-                            <TableHead class="w-[100px]">
-                                Ticker
-                            </TableHead>
+                            <TableHead class="w-[100px]"> Ticker</TableHead>
                             <TableHead>Units</TableHead>
                             <TableHead>Purchase</TableHead>
                             <TableHead>Last</TableHead>
                             <TableHead>Cost</TableHead>
                             <TableHead>Market Value</TableHead>
-<!--                            <TableHead class="text-right">Profit / Loss</TableHead>-->
-<!--                            <TableHead class="text-right">Weight</TableHead>-->
-<!--                            <TableHead class="text-right">Yield</TableHead>-->
-<!--                            <TableHead class="text-right">DRP Weight</TableHead>-->
+                            <TableHead>Profit / Loss $</TableHead>
+                            <TableHead>Profit / Loss %</TableHead>
+                            <TableHead>Weight</TableHead>
+                            <TableHead>Yield %</TableHead>
+                            <TableHead>Yield $</TableHead>
+                            <TableHead>DRP Weight</TableHead>
                             <TableHead>Frequency</TableHead>
                             <TableHead>Registry</TableHead>
                             <TableHead>Notes</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow v-for="holding in holdings" :key="holding.id">
-                            <TableCell class="font-medium">
-                                {{ holding.ticker }}
-                            </TableCell>
-                            <TableCell class="text-right">{{ holding.units }}</TableCell>
-                            <TableCell class="text-right">{{ holding.price }}</TableCell>
-                            <TableCell class="text-right">{{ holding.last_price }}</TableCell>
-                            <TableCell class="text-right">{{ cost(holding) }}</TableCell>
-                            <TableCell class="text-right">{{ marketValue(holding) }}</TableCell>
-                            <TableCell>{{ holding.dividend_frequency }}</TableCell>
-                            <TableCell>{{ holding.registry }}</TableCell>
-                            <TableCell>{{ holding.notes }}</TableCell>
-                        </TableRow>
+                        <Deferred data="holdings">
+                            <template #fallback>
+                                <TableCell v-for="i in Array(14).keys()" :key="i">
+                                    <Skeleton />
+                                </TableCell>
+                            </template>
+
+                            <TableRow v-for="holding in holdings" :key="holding.id">
+                                <TableCell class="font-medium">
+                                    {{ holding.ticker }}
+                                </TableCell>
+                                <TableCell class="text-right">{{ number(holding.units) }}</TableCell>
+                                <TableCell class="text-right">{{ price(holding.purchase, 3) }}</TableCell>
+                                <TableCell class="text-right">{{ price(holding.last_price, 3) }}</TableCell>
+                                <TableCell class="text-right">{{ price(cost(holding)) }}</TableCell>
+                                <TableCell class="text-right">{{ price(marketValue(holding)) }}</TableCell>
+                                <TableCell class="text-right">{{ price(profitLossAmount(holding)) }}</TableCell>
+                                <TableCell class="text-right">{{ number(profitLoss(holding), 'percent', 2) }}</TableCell>
+                                <TableCell
+                                    class="text-right"
+                                    :class="{
+                                        'text-orange-500': weight(holding) > 0.2,
+                                        'text-red-500': weight(holding) > 0.33,
+                                    }"
+                                    >{{ number(weight(holding), 'percent', 2) }}
+                                </TableCell>
+                                <TableCell class="text-right">{{ holding.yield }}%</TableCell>
+                                <TableCell class="text-right">{{ price(yieldAmount(holding)) }}</TableCell>
+                                <TableCell class="text-right">{{ holding.drp_weight }}%</TableCell>
+                                <TableCell>{{ holding.dividend_frequency }}</TableCell>
+                                <TableCell>{{ holding.registry }}</TableCell>
+                                <TableCell>{{ holding.notes }}</TableCell>
+                            </TableRow>
+
+                            <TableRow class="font-bold">
+                                <TableCell />
+                                <TableCell class="text-right">{{ number(aggregates.units) }}</TableCell>
+                                <TableCell />
+                                <TableCell />
+                                <TableCell class="text-right">{{ price(aggregates.cost) }}</TableCell>
+                                <TableCell class="text-right">{{ price(aggregates.marketValue) }}</TableCell>
+                                <TableCell class="text-right">{{ price(aggregates.profitLossAmount) }}</TableCell>
+                                <TableCell class="text-right">{{ number(aggregates.profitLoss, 'percent', 2) }}</TableCell>
+                                <TableCell class="text-right">100%</TableCell>
+                                <TableCell class="text-right">{{ number(aggregates.yieldPercentage, 'percent', 2) }}</TableCell>
+                                <TableCell class="text-right">{{ price(aggregates.yieldAmount) }}</TableCell>
+                                <TableCell class="text-right">{{ number(aggregates.drpWeight, 'decimal', 2) }}%</TableCell>
+                                <TableCell />
+                                <TableCell />
+                                <TableCell />
+                            </TableRow>
+                        </Deferred>
                     </TableBody>
                 </Table>
             </div>

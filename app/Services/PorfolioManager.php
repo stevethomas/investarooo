@@ -24,10 +24,14 @@ class PorfolioManager
         $valueRange = new ValueRange;
         $valueRange->setRange(static::range());
         $valueRange->setValues([
-            ['Ticker', 'Last price'],
+            ['Ticker', 'Last price', 'Name'],
             ...$holdings->map(function (Holding $holding) use (&$i) {
                 $i++;
-                return [$holding->ticker, sprintf('=GOOGLEFINANCE(CONCAT("ASX:", A%s))', $i)];
+                return [
+                    $holding->ticker,
+                    sprintf('=GOOGLEFINANCE(CONCAT("ASX:", A%s))', $i),
+                    sprintf('=GOOGLEFINANCE(CONCAT("ASX:", A%s), "name")', $i),
+                ];
             })
         ]);
 
@@ -41,10 +45,11 @@ class PorfolioManager
 
     public static function all(): Collection
     {
-        return cache()->remember('portfolio', 120, fn () => collect(static::getService()
-            ->spreadsheets_values
-            ->get(static::spreadsheetId(), static::range())
-            ->getValues()
+        return cache()->remember('portfolio', 120, fn () => collect(
+            static::getService()
+                ->spreadsheets_values
+                ->get(static::spreadsheetId(), static::range())
+                ->getValues()
         )->mapWithKeys(fn (array $row) => [$row[0] => $row[1]]));
     }
 
@@ -73,6 +78,6 @@ class PorfolioManager
 
     protected static function range(): string
     {
-        return 'Sheet1!A1:B' . Holding::count() + 1;
+        return 'Sheet1!A1:C' . Holding::count() + 1;
     }
 }

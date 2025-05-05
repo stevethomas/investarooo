@@ -8,6 +8,6 @@ enum DividendFrequency: string
 
     case MONTHLY = 'monthly';
     case QUARTERLY = 'quarterly';
-    case BI_ANNUALLY = 'bi-annually';
-    case ANNUALLY = 'annually';
+    case TWICE_YEARLY = 'twice-yearly';
+    case YEARLY = 'yearly';
 }
