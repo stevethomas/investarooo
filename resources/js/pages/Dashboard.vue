@@ -105,17 +105,18 @@ const aggregates = computed(() => {
 
                                 <br>
 
-                                <span class="text-sm">
+                                <span class="text-sm text-muted-foreground">
                                     <span :class="greenRed(aggregates.yieldAmount)">
                                         {{ price(aggregates.cashAmount) }}
                                     </span>
-                                    is distributed as cash and
+                                    as cash and
                                     <span :class="greenRed(aggregates.yieldAmount)">
                                         {{ price(aggregates.drpAmount) }}
                                     </span>
                                     is reinvested
                                 </span>
                             </div>
+
                             <div class="pt-4">
                                 Monthly yield is
                                 <span :class="greenRed(aggregates.yieldAmount)">
@@ -128,17 +129,18 @@ const aggregates = computed(() => {
 
                                 <br />
 
-                                <span class="text-sm">
+                                <span class="text-sm text-muted-foreground">
                                     <span :class="greenRed(aggregates.yieldAmount)">
                                         {{ price(aggregates.cashAmount / 12) }}
                                     </span>
-                                    is distributed as cash and
+                                    as cash and
                                     <span :class="greenRed(aggregates.yieldAmount)">
                                         {{ price(aggregates.drpAmount / 12) }}
                                     </span>
                                     is reinvested
                                 </span>
                             </div>
+
                             <div class="pt-4">
                                 Weekly yield is
                                 <span :class="greenRed(aggregates.yieldAmount)">
@@ -156,11 +158,11 @@ const aggregates = computed(() => {
 
                                 <br />
 
-                                <span class="text-sm">
+                                <span class="text-sm text-muted-foreground">
                                     <span :class="greenRed(aggregates.yieldAmount)">
                                         {{ price(aggregates.cashAmount / 52) }}
                                     </span>
-                                    is distributed as cash and
+                                    as cash and
                                     <span :class="greenRed(aggregates.yieldAmount)">
                                         {{ price(aggregates.drpAmount / 52) }}
                                     </span>
