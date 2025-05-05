@@ -50,7 +50,7 @@ class PorfolioManager
                 ->spreadsheets_values
                 ->get(static::spreadsheetId(), static::range())
                 ->getValues()
-        )->mapWithKeys(fn (array $row) => [$row[0] => $row[1]]));
+        )->mapWithKeys(fn (array $row) => [$row[0] => $row]));
     }
 
     public static function find(string $ticker): array

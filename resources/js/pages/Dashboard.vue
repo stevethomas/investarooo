@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger
+} from '@/components/ui/tooltip'
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Deferred, Head } from '@inertiajs/vue3';
@@ -217,7 +223,14 @@ const aggregates = computed(() => {
 
                             <TableRow v-for="holding in holdings" :key="holding.id">
                                 <TableCell class="font-medium">
-                                    {{ holding.ticker }}
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger>{{ holding.ticker }}</TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>{{ holding.name }}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </TableCell>
                                 <TableCell class="text-right">{{ number(holding.units) }}</TableCell>
                                 <TableCell class="text-right">{{ price(holding.purchase, 3) }}</TableCell>
